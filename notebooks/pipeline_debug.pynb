@@ -1,0 +1,1466 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Source: https://towardsdatascience.com/custom-transformers-and-ml-data-pipelines-with-python-20ea2a7adb65"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 109,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class CreateDummies(BaseEstimator,TransformerMixin):\n",
+    "    def __init__(self,):\n",
+    "#         self._feature_names = feature_names\n",
+    "        pass\n",
+    "    \n",
+    "    def fit(self, X, y=None):\n",
+    "        return self\n",
+    "    def transform(self, X, y=None):\n",
+    "        df = X.copy()\n",
+    "        \n",
+    "        df.apply(lambda x:x.astype('category', categories=X.columns), axis=0)\n",
+    "        for column in df.columns:\n",
+    "            df[column] = pd.Categorical(df[column])\n",
+    "        new_df = get_dummies(df, drop_first=True)\n",
+    "        # in case we need them later\n",
+    "        self.columns = new_df.columns\n",
+    "        return new_df.values\n",
+    "    \n",
+    "#         columns = list(X.columns)# since this is being fed all the categorical data, I can do this\n",
+    "        \n",
+    "#         #Drop highly correlated\n",
+    "#         drop_list = ['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36']\n",
+    "#         X.drop(drop_list,inplace = True, axis = 1)\n",
+    "        \n",
+    "#         for name in drop_list:\n",
+    "#             columns.remove(name)\n",
+    "        \n",
+    "#         X = pd.get_dummies(data = X, columns = columns, prefix = columns,drop_first = True)\n",
+    "#         return X.values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class CreateDummies(BaseEstimator,TransformerMixin):\n",
+    "    def fit(self, X, y=None):\n",
+    "        return self\n",
+    "    \n",
+    "    def transform(self, X):\n",
+    "        return pd.get_dummies(X).copy()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np \n",
+    "import pandas as pd\n",
+    "from sklearn.base import BaseEstimator, TransformerMixin\n",
+    "from sklearn.pipeline import FeatureUnion, Pipeline \n",
+    "\n",
+    "#Custom Transformer that extracts columns passed as argument to its constructor \n",
+    "class FeatureSelector( BaseEstimator, TransformerMixin ):\n",
+    "    #Class Constructor \n",
+    "    def __init__( self, feature_names ):\n",
+    "        self._feature_names = feature_names \n",
+    "    \n",
+    "    def fit( self, X, y = None ):\n",
+    "        return self \n",
+    "    \n",
+    "    #Method that describes what we need this transformer to do\n",
+    "    def transform( self, X, y = None ):\n",
+    "        return X[ self._feature_names ]\n",
+    "    \n",
+    "## This function just takes every column and makes it its own object column?\n",
+    "## pipeline makes me think this is just making a big malleable dataframe to\n",
+    "## automate"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#dropping highly correlated > 0.9\n",
+    "highly_correlated = ['Insurance_History_4','Insurance_History_7','Insurance_History_9', #category\n",
+    " 'Family_Hist_4', #numeric\n",
+    " 'Medical_History_26','Medical_History_36', #cat\n",
+    " 'Medical_Keyword_11','Medical_Keyword_23','Medical_Keyword_48'] #numeric"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class CategoricalDummy(BaseEstimator, TransformerMixin):\n",
+    "    def __init__(self):\n",
+    "        pass\n",
+    "    def fit( self, X, y= None ):\n",
+    "        return self\n",
+    "    \n",
+    "    def transform(self, X, y = None):\n",
+    "#         df = pd.DataFrame(X)\n",
+    "        columns = list(X.columns)# since this is being fed all the categorical data, I can do this\n",
+    "        \n",
+    "        #Drop highly correlated\n",
+    "        drop_list = ['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36']\n",
+    "        X.drop(drop_list,inplace = True, axis = 1)\n",
+    "        \n",
+    "        for name in drop_list:\n",
+    "            columns.remove(name)\n",
+    "        \n",
+    "        X = pd.get_dummies(data = X, columns = columns, prefix = columns,drop_first = True)\n",
+    "        return X.values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class CategoricalTransformer( BaseEstimator, TransformerMixin ):\n",
+    "    def __init__(self):\n",
+    "        pass\n",
+    "    \n",
+    "    def fit( self, X, y = None  ):\n",
+    "        return self\n",
+    "        \n",
+    "    #Transformer method we wrote for this transformer \n",
+    "    def transform(self, X , y = None ):\n",
+    "\n",
+    "#         Xfm = pd.get_dummies(X)\n",
+    "        \n",
+    "        return X.values\n",
+    "#         return X[ self.feature_names ]    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#use .loc[row,indexer] instead of copying a slice\n",
+    "class NumericalTransformer(BaseEstimator, TransformerMixin):\n",
+    "    #Class Constructor\n",
+    "    def __init__( self, num_keywords = True, avg_family = True):\n",
+    "        self._num_keywords = num_keywords\n",
+    "        self.avg_family = avg_family\n",
+    "        \n",
+    "    #Return self, nothing else to do here\n",
+    "    def fit( self, X, y = None ):\n",
+    "        return self \n",
+    "        \n",
+    "    #Custom transform method we wrote that creates aformentioned features and drops redundant ones \n",
+    "    def transform(self, X, y = None): # X's type is a dataframe\n",
+    "        #feature engineering sum of keywords \n",
+    "        if self._num_keywords:\n",
+    "            X.loc[:,'num_keywords'] = sum([X[column] for column in ['Medical_Keyword_' + str(i) for i in range(1,49)]])\n",
+    "\n",
+    "    #family_hist_2 -> 5\n",
+    "        if self.avg_family: #will create columns with NaN from 0 + 0 + 0 + 0\n",
+    "            X.loc[:,'avg_family'] = X.loc[:,['Family_Hist_2','Family_Hist_3','Family_Hist_4','Family_Hist_5']].mean(axis = 1, skipna= True)\n",
+    "            X.drop(['Family_Hist_2','Family_Hist_3','Family_Hist_4','Family_Hist_5'],axis = 1, inplace = True)\n",
+    "        \n",
+    "        #solution to NaN value\n",
+    "        X.loc[:,'avg_family'] = np.where(X.loc[:,'avg_family'].isna(),0.5,X.loc[:,'avg_family'])\n",
+    "        \n",
+    "        #imput employment info and insurance history 5 using mean\n",
+    "        for column in ['Employment_Info_1','Employment_Info_4','Employment_Info_6','Insurance_History_5']:\n",
+    "            conditions = [ X.loc[:,column].isnull() ]\n",
+    "            out = [X.loc[:,column].mean()]\n",
+    "            X.loc[:,column] = np.select(conditions,out,X.loc[:,column])\n",
+    "            \n",
+    "        #fill in nan-vales with 0 in keywords and drop highly correlated\n",
+    "        X.fillna(0,inplace = True)\n",
+    "        X.drop(['Medical_Keyword_11','Medical_Keyword_23','Medical_Keyword_48'],inplace = True, axis = 1)\n",
+    "\n",
+    "        return X.values\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cats = 'Product_Info_1, Product_Info_2, Product_Info_3, Product_Info_5, Product_Info_6, Product_Info_7, Employment_Info_2, Employment_Info_3, Employment_Info_5, InsuredInfo_1, InsuredInfo_2, InsuredInfo_3, InsuredInfo_4, InsuredInfo_5, InsuredInfo_6, InsuredInfo_7, Insurance_History_1, Insurance_History_2, Insurance_History_3, Insurance_History_4, Insurance_History_7, Insurance_History_8, Insurance_History_9, Family_Hist_1, Medical_History_2, Medical_History_3, Medical_History_4, Medical_History_5, Medical_History_6, Medical_History_7, Medical_History_8, Medical_History_9, Medical_History_11, Medical_History_12, Medical_History_13, Medical_History_14, Medical_History_16, Medical_History_17, Medical_History_18, Medical_History_19, Medical_History_20, Medical_History_21, Medical_History_22, Medical_History_23, Medical_History_25, Medical_History_26, Medical_History_27, Medical_History_28, Medical_History_29, Medical_History_30, Medical_History_31, Medical_History_33, Medical_History_34, Medical_History_35, Medical_History_36, Medical_History_37, Medical_History_38, Medical_History_39, Medical_History_40, Medical_History_41'.split(', ')\n",
+    "cont = 'Product_Info_4, Ins_Age, Ht, Wt, BMI, Employment_Info_1, Employment_Info_4, Employment_Info_6, Insurance_History_5, Family_Hist_2, Family_Hist_3, Family_Hist_4, Family_Hist_5'.split(', ')\n",
+    "disc = 'Medical_History_1, Medical_History_10, Medical_History_15, Medical_History_24, Medical_History_32'.split(', ')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dummies = cats.copy()\n",
+    "for i in ['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36']:\n",
+    "    dummies.remove(i)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 110,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Categrical features to pass down the categorical pipeline \n",
+    "categorical_features = cats\n",
+    "\n",
+    "#Numerical features to pass down the numerical pipeline \n",
+    "numerical_features = ['Medical_Keyword_' + str(i) for i in range(1,49)] + cont + disc\n",
+    "\n",
+    "#Defining the steps in the categorical pipeline \n",
+    "categorical_pipeline = Pipeline( steps = [ ( 'cat_selector', FeatureSelector(categorical_features) ), \n",
+    "                                          \n",
+    "#                                   ( 'cat_transformer', CategoricalTransformer() ),\n",
+    "                                      \n",
+    "                                          ('create_dummies',CreateDummies()),\n",
+    "#                                           ('one_hot_encoder',OneHotEncoder( sparse = False))\n",
+    "#                                     ('cat_dummy' , CategoricalDummy()),\n",
+    "                                                                           ] )\n",
+    "#Defining the steps in the numerical pipeline     \n",
+    "numerical_pipeline = Pipeline( steps = [ ( 'num_selector', FeatureSelector(numerical_features) ),\n",
+    "                                        \n",
+    "                                  ( 'num_transformer', NumericalTransformer(numerical_features) ),\n",
+    "                                       ])\n",
+    "\n",
+    "#Combining numerical and categorical piepline into one full big pipeline horizontally using FeatureUnion\n",
+    "full_pipeline = FeatureUnion( transformer_list = [ ( 'categorical_pipeline', categorical_pipeline ), \n",
+    "                                        \n",
+    "                                                  ( 'numerical_pipeline', numerical_pipeline ) ] )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 96,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "NumericalTransformer(avg_family=True, num_keywords=None)"
+      ]
+     },
+     "execution_count": 96,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "numerical_pipeline['num_transformer']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# MODELING"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<b>Import necessary packages"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from xgboost import XGBClassifier\n",
+    "from sklearn.metrics import accuracy_score, f1_score, cohen_kappa_score, make_scorer"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pickle"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.metrics import cohen_kappa_score, make_scorer\n",
+    "cohen = make_scorer(cohen_kappa_score) #custom scorer using sklearn"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<b>\n",
+    "Read in data and run a train-test split"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data = pd.read_csv('train.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X = data.drop('Response', axis = 1)\n",
+    "#You can covert the target variable to numpy \n",
+    "y = data['Response'].values \n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split( X, y , test_size = 0.2 , random_state = 42 )\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<b>Get the full pipeline and classifier into another pipeline. \n",
+    "<br>Manually tested parameters and also utilized some for-looping through list classifier of parameters, but not shown\n",
+    "<br>Attempt at integrating gridsearch into pipeline is at bottom of notebook. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "ename": "TypeError",
+     "evalue": "astype() got an unexpected keyword argument 'categories'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-111-23b1b6b5dfbd>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m     15\u001b[0m ] )\n\u001b[1;32m     16\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 17\u001b[0;31m \u001b[0mfull_pipeline_m\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX_train\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0my_train\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     18\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     19\u001b[0m \u001b[0my_pred\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mfull_pipeline_m\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpredict\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX_test\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36mfit\u001b[0;34m(self, X, y, **fit_params)\u001b[0m\n\u001b[1;32m    348\u001b[0m             \u001b[0mThis\u001b[0m \u001b[0mestimator\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    349\u001b[0m         \"\"\"\n\u001b[0;32m--> 350\u001b[0;31m         \u001b[0mXt\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfit_params\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_fit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    351\u001b[0m         with _print_elapsed_time('Pipeline',\n\u001b[1;32m    352\u001b[0m                                  self._log_message(len(self.steps) - 1)):\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36m_fit\u001b[0;34m(self, X, y, **fit_params)\u001b[0m\n\u001b[1;32m    313\u001b[0m                 \u001b[0mmessage_clsname\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'Pipeline'\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    314\u001b[0m                 \u001b[0mmessage\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_log_message\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstep_idx\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 315\u001b[0;31m                 **fit_params_steps[name])\n\u001b[0m\u001b[1;32m    316\u001b[0m             \u001b[0;31m# Replace the transformer of the step with the fitted\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    317\u001b[0m             \u001b[0;31m# transformer. This is necessary when loading the transformer\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/memory.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n\u001b[1;32m    353\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    354\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__call__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 355\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    356\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    357\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mcall_and_shelve\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36m_fit_transform_one\u001b[0;34m(transformer, X, y, weight, message_clsname, message, **fit_params)\u001b[0m\n\u001b[1;32m    726\u001b[0m     \u001b[0;32mwith\u001b[0m \u001b[0m_print_elapsed_time\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mmessage_clsname\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmessage\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    727\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mhasattr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtransformer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'fit_transform'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 728\u001b[0;31m             \u001b[0mres\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtransformer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit_transform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    729\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    730\u001b[0m             \u001b[0mres\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtransformer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36mfit_transform\u001b[0;34m(self, X, y, **fit_params)\u001b[0m\n\u001b[1;32m    934\u001b[0m             \u001b[0msum\u001b[0m \u001b[0mof\u001b[0m \u001b[0mn_components\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0moutput\u001b[0m \u001b[0mdimension\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0mover\u001b[0m \u001b[0mtransformers\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    935\u001b[0m         \"\"\"\n\u001b[0;32m--> 936\u001b[0;31m         \u001b[0mresults\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_parallel_func\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfit_params\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0m_fit_transform_one\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    937\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0mresults\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    938\u001b[0m             \u001b[0;31m# All transformers are None\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36m_parallel_func\u001b[0;34m(self, X, y, fit_params, func)\u001b[0m\n\u001b[1;32m    964\u001b[0m             \u001b[0mmessage\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_log_message\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mname\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0midx\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtransformers\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    965\u001b[0m             \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0midx\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0mname\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtransformer\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 966\u001b[0;31m                                     weight) in enumerate(transformers, 1))\n\u001b[0m\u001b[1;32m    967\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    968\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mX\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/parallel.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, iterable)\u001b[0m\n\u001b[1;32m   1002\u001b[0m             \u001b[0;31m# remaining jobs.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1003\u001b[0m             \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_iterating\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mFalse\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1004\u001b[0;31m             \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdispatch_one_batch\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0miterator\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1005\u001b[0m                 \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_iterating\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_original_iterator\u001b[0m \u001b[0;32mis\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1006\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/parallel.py\u001b[0m in \u001b[0;36mdispatch_one_batch\u001b[0;34m(self, iterator)\u001b[0m\n\u001b[1;32m    833\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0;32mFalse\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    834\u001b[0m             \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 835\u001b[0;31m                 \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_dispatch\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtasks\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    836\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0;32mTrue\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    837\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/parallel.py\u001b[0m in \u001b[0;36m_dispatch\u001b[0;34m(self, batch)\u001b[0m\n\u001b[1;32m    752\u001b[0m         \u001b[0;32mwith\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_lock\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    753\u001b[0m             \u001b[0mjob_idx\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_jobs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 754\u001b[0;31m             \u001b[0mjob\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_backend\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_async\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mbatch\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcallback\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mcb\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    755\u001b[0m             \u001b[0;31m# A job can complete so quickly than its callback is\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    756\u001b[0m             \u001b[0;31m# called before we get here, causing self._jobs to\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/_parallel_backends.py\u001b[0m in \u001b[0;36mapply_async\u001b[0;34m(self, func, callback)\u001b[0m\n\u001b[1;32m    207\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mapply_async\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcallback\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mNone\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    208\u001b[0m         \u001b[0;34m\"\"\"Schedule a func to be run\"\"\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 209\u001b[0;31m         \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mImmediateResult\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    210\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mcallback\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    211\u001b[0m             \u001b[0mcallback\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mresult\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/_parallel_backends.py\u001b[0m in \u001b[0;36m__init__\u001b[0;34m(self, batch)\u001b[0m\n\u001b[1;32m    588\u001b[0m         \u001b[0;31m# Don't delay the application, to avoid keeping the input\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    589\u001b[0m         \u001b[0;31m# arguments in memory\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 590\u001b[0;31m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mresults\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mbatch\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    591\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    592\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/parallel.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    254\u001b[0m         \u001b[0;32mwith\u001b[0m \u001b[0mparallel_backend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_backend\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mn_jobs\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_n_jobs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    255\u001b[0m             return [func(*args, **kwargs)\n\u001b[0;32m--> 256\u001b[0;31m                     for func, args, kwargs in self.items]\n\u001b[0m\u001b[1;32m    257\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    258\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__len__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/joblib/parallel.py\u001b[0m in \u001b[0;36m<listcomp>\u001b[0;34m(.0)\u001b[0m\n\u001b[1;32m    254\u001b[0m         \u001b[0;32mwith\u001b[0m \u001b[0mparallel_backend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_backend\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mn_jobs\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_n_jobs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    255\u001b[0m             return [func(*args, **kwargs)\n\u001b[0;32m--> 256\u001b[0;31m                     for func, args, kwargs in self.items]\n\u001b[0m\u001b[1;32m    257\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    258\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__len__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36m_fit_transform_one\u001b[0;34m(transformer, X, y, weight, message_clsname, message, **fit_params)\u001b[0m\n\u001b[1;32m    726\u001b[0m     \u001b[0;32mwith\u001b[0m \u001b[0m_print_elapsed_time\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mmessage_clsname\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmessage\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    727\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mhasattr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtransformer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'fit_transform'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 728\u001b[0;31m             \u001b[0mres\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtransformer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit_transform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    729\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    730\u001b[0m             \u001b[0mres\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtransformer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36mfit_transform\u001b[0;34m(self, X, y, **fit_params)\u001b[0m\n\u001b[1;32m    389\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mXt\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    390\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mhasattr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlast_step\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'fit_transform'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 391\u001b[0;31m                 \u001b[0;32mreturn\u001b[0m \u001b[0mlast_step\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit_transform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mXt\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    392\u001b[0m             \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    393\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mlast_step\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mXt\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mXt\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/base.py\u001b[0m in \u001b[0;36mfit_transform\u001b[0;34m(self, X, y, **fit_params)\u001b[0m\n\u001b[1;32m    572\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    573\u001b[0m             \u001b[0;31m# fit method of arity 2 (supervised transformation)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 574\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mfit_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    575\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    576\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m<ipython-input-109-a6c1a41b55ad>\u001b[0m in \u001b[0;36mtransform\u001b[0;34m(self, X, y)\u001b[0m\n\u001b[1;32m      9\u001b[0m         \u001b[0mdf\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mX\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcopy\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     10\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 11\u001b[0;31m         \u001b[0mdf\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;32mlambda\u001b[0m \u001b[0mx\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mastype\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'category'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcategories\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     12\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0mcolumn\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mdf\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     13\u001b[0m             \u001b[0mdf\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mcolumn\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mCategorical\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mdf\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mcolumn\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/pandas/core/frame.py\u001b[0m in \u001b[0;36mapply\u001b[0;34m(self, func, axis, raw, result_type, args, **kwds)\u001b[0m\n\u001b[1;32m   6876\u001b[0m             \u001b[0mkwds\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   6877\u001b[0m         )\n\u001b[0;32m-> 6878\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mop\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_result\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   6879\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   6880\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mapplymap\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m->\u001b[0m \u001b[0;34m\"DataFrame\"\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/pandas/core/apply.py\u001b[0m in \u001b[0;36mget_result\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    184\u001b[0m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_raw\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    185\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 186\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_standard\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    187\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    188\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mapply_empty_result\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/pandas/core/apply.py\u001b[0m in \u001b[0;36mapply_standard\u001b[0;34m(self)\u001b[0m\n\u001b[1;32m    294\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    295\u001b[0m                 result = libreduction.compute_reduction(\n\u001b[0;32m--> 296\u001b[0;31m                     \u001b[0mvalues\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mf\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0maxis\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdummy\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mdummy\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mlabels\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mlabels\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    297\u001b[0m                 )\n\u001b[1;32m    298\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mValueError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32mpandas/_libs/reduction.pyx\u001b[0m in \u001b[0;36mpandas._libs.reduction.compute_reduction\u001b[0;34m()\u001b[0m\n",
+      "\u001b[0;32mpandas/_libs/reduction.pyx\u001b[0m in \u001b[0;36mpandas._libs.reduction.Reducer.get_result\u001b[0;34m()\u001b[0m\n",
+      "\u001b[0;32m<ipython-input-109-a6c1a41b55ad>\u001b[0m in \u001b[0;36m<lambda>\u001b[0;34m(x)\u001b[0m\n\u001b[1;32m      9\u001b[0m         \u001b[0mdf\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mX\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcopy\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     10\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 11\u001b[0;31m         \u001b[0mdf\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;32mlambda\u001b[0m \u001b[0mx\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mastype\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'category'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcategories\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     12\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0mcolumn\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mdf\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     13\u001b[0m             \u001b[0mdf\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mcolumn\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mCategorical\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mdf\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mcolumn\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mTypeError\u001b[0m: astype() got an unexpected keyword argument 'categories'"
+     ]
+    }
+   ],
+   "source": [
+    "#The full pipeline as a step in another pipeline with an estimator as the final step\n",
+    "full_pipeline_m = Pipeline( steps = [ \n",
+    "    ( 'full_pipeline', full_pipeline ),\n",
+    "\n",
+    "#         ( 'rfm',XGBClassifier(n_jobs = -1, objective= 'multi:softmax',\n",
+    "#                              eval_metric = 'merror', n_estimators =  100,\n",
+    "#                              verbosity = 0, max_depth = 10, learning_rate =0.3) )\n",
+    "        ( 'rfm',RandomForestClassifier(n_jobs = -1,\n",
+    "                              n_estimators =  300,\n",
+    "                             verbose = 1, max_depth = 30, max_features ='sqrt',\n",
+    "                                      class_weight = 'balanced',\n",
+    "                                      random_state = 0,\n",
+    "                                      criterion = 'entropy') )\n",
+    "\n",
+    "] )\n",
+    "\n",
+    "full_pipeline_m.fit(X_train,y_train)\n",
+    "\n",
+    "y_pred = full_pipeline_m.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ValueError",
+     "evalue": "feature_names mismatch: ['f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f20', 'f21', 'f22', 'f23', 'f24', 'f25', 'f26', 'f27', 'f28', 'f29', 'f30', 'f31', 'f32', 'f33', 'f34', 'f35', 'f36', 'f37', 'f38', 'f39', 'f40', 'f41', 'f42', 'f43', 'f44', 'f45', 'f46', 'f47', 'f48', 'f49', 'f50', 'f51', 'f52', 'f53', 'f54', 'f55', 'f56', 'f57', 'f58', 'f59', 'f60', 'f61', 'f62', 'f63', 'f64', 'f65', 'f66', 'f67', 'f68', 'f69', 'f70', 'f71', 'f72', 'f73', 'f74', 'f75', 'f76', 'f77', 'f78', 'f79', 'f80', 'f81', 'f82', 'f83', 'f84', 'f85', 'f86', 'f87', 'f88', 'f89', 'f90', 'f91', 'f92', 'f93', 'f94', 'f95', 'f96', 'f97', 'f98', 'f99', 'f100', 'f101', 'f102', 'f103', 'f104', 'f105', 'f106', 'f107', 'f108', 'f109', 'f110', 'f111', 'f112', 'f113', 'f114', 'f115', 'f116', 'f117', 'f118', 'f119', 'f120', 'f121', 'f122', 'f123', 'f124', 'f125', 'f126', 'f127', 'f128', 'f129', 'f130', 'f131', 'f132', 'f133', 'f134', 'f135', 'f136', 'f137', 'f138', 'f139', 'f140', 'f141', 'f142', 'f143', 'f144', 'f145', 'f146', 'f147', 'f148', 'f149', 'f150', 'f151', 'f152', 'f153', 'f154', 'f155', 'f156', 'f157', 'f158', 'f159', 'f160', 'f161', 'f162', 'f163', 'f164', 'f165', 'f166', 'f167', 'f168', 'f169', 'f170', 'f171', 'f172', 'f173', 'f174', 'f175', 'f176', 'f177', 'f178', 'f179', 'f180', 'f181', 'f182', 'f183', 'f184', 'f185', 'f186', 'f187', 'f188', 'f189', 'f190', 'f191', 'f192', 'f193', 'f194', 'f195', 'f196', 'f197', 'f198', 'f199', 'f200', 'f201', 'f202', 'f203', 'f204', 'f205', 'f206', 'f207', 'f208', 'f209', 'f210', 'f211', 'f212', 'f213', 'f214', 'f215', 'f216', 'f217', 'f218', 'f219', 'f220', 'f221', 'f222', 'f223', 'f224', 'f225', 'f226', 'f227', 'f228', 'f229', 'f230', 'f231', 'f232', 'f233', 'f234', 'f235', 'f236', 'f237', 'f238', 'f239', 'f240', 'f241', 'f242', 'f243', 'f244', 'f245', 'f246', 'f247', 'f248', 'f249', 'f250', 'f251', 'f252', 'f253', 'f254', 'f255', 'f256', 'f257', 'f258', 'f259', 'f260', 'f261', 'f262', 'f263', 'f264', 'f265', 'f266', 'f267', 'f268', 'f269', 'f270', 'f271', 'f272', 'f273', 'f274', 'f275', 'f276', 'f277', 'f278', 'f279', 'f280', 'f281', 'f282', 'f283', 'f284', 'f285', 'f286', 'f287', 'f288', 'f289', 'f290', 'f291', 'f292', 'f293', 'f294', 'f295', 'f296', 'f297', 'f298', 'f299', 'f300', 'f301', 'f302', 'f303', 'f304', 'f305', 'f306', 'f307', 'f308', 'f309', 'f310', 'f311', 'f312', 'f313', 'f314', 'f315', 'f316', 'f317', 'f318', 'f319', 'f320', 'f321', 'f322', 'f323', 'f324', 'f325', 'f326', 'f327', 'f328', 'f329', 'f330', 'f331', 'f332', 'f333', 'f334', 'f335', 'f336', 'f337', 'f338', 'f339', 'f340', 'f341', 'f342', 'f343', 'f344', 'f345', 'f346', 'f347', 'f348', 'f349', 'f350', 'f351', 'f352', 'f353', 'f354', 'f355', 'f356', 'f357', 'f358', 'f359', 'f360', 'f361', 'f362', 'f363', 'f364', 'f365', 'f366', 'f367', 'f368', 'f369', 'f370', 'f371', 'f372', 'f373', 'f374', 'f375', 'f376', 'f377', 'f378', 'f379', 'f380', 'f381', 'f382', 'f383', 'f384', 'f385', 'f386', 'f387', 'f388', 'f389', 'f390', 'f391', 'f392', 'f393', 'f394', 'f395', 'f396', 'f397', 'f398', 'f399', 'f400', 'f401', 'f402', 'f403', 'f404', 'f405', 'f406', 'f407', 'f408', 'f409', 'f410', 'f411', 'f412', 'f413', 'f414', 'f415', 'f416', 'f417', 'f418', 'f419', 'f420', 'f421', 'f422', 'f423', 'f424', 'f425', 'f426', 'f427', 'f428', 'f429', 'f430', 'f431', 'f432', 'f433', 'f434', 'f435', 'f436', 'f437', 'f438', 'f439', 'f440', 'f441', 'f442', 'f443', 'f444', 'f445', 'f446', 'f447', 'f448', 'f449', 'f450', 'f451', 'f452', 'f453', 'f454', 'f455', 'f456', 'f457', 'f458', 'f459', 'f460', 'f461', 'f462', 'f463', 'f464', 'f465', 'f466', 'f467', 'f468', 'f469', 'f470', 'f471', 'f472', 'f473', 'f474', 'f475', 'f476', 'f477', 'f478', 'f479', 'f480', 'f481', 'f482', 'f483', 'f484', 'f485', 'f486', 'f487', 'f488', 'f489', 'f490', 'f491', 'f492', 'f493', 'f494', 'f495', 'f496', 'f497', 'f498', 'f499', 'f500', 'f501', 'f502', 'f503', 'f504', 'f505', 'f506', 'f507', 'f508', 'f509', 'f510', 'f511', 'f512', 'f513', 'f514', 'f515', 'f516', 'f517', 'f518', 'f519', 'f520', 'f521', 'f522', 'f523', 'f524', 'f525', 'f526', 'f527', 'f528', 'f529', 'f530', 'f531', 'f532', 'f533', 'f534', 'f535', 'f536', 'f537', 'f538', 'f539', 'f540', 'f541', 'f542', 'f543', 'f544', 'f545', 'f546', 'f547', 'f548', 'f549', 'f550', 'f551', 'f552', 'f553', 'f554', 'f555', 'f556', 'f557', 'f558', 'f559', 'f560', 'f561', 'f562', 'f563', 'f564', 'f565', 'f566', 'f567', 'f568', 'f569', 'f570', 'f571', 'f572', 'f573', 'f574', 'f575', 'f576', 'f577', 'f578', 'f579', 'f580', 'f581', 'f582', 'f583', 'f584', 'f585', 'f586', 'f587', 'f588', 'f589', 'f590', 'f591', 'f592', 'f593', 'f594', 'f595', 'f596', 'f597', 'f598', 'f599', 'f600', 'f601', 'f602', 'f603', 'f604', 'f605', 'f606', 'f607', 'f608', 'f609', 'f610', 'f611', 'f612', 'f613', 'f614', 'f615', 'f616', 'f617', 'f618', 'f619', 'f620', 'f621', 'f622', 'f623', 'f624', 'f625', 'f626', 'f627', 'f628', 'f629', 'f630', 'f631', 'f632', 'f633', 'f634', 'f635', 'f636', 'f637', 'f638', 'f639', 'f640', 'f641', 'f642', 'f643', 'f644', 'f645', 'f646', 'f647', 'f648', 'f649', 'f650', 'f651', 'f652', 'f653', 'f654', 'f655', 'f656', 'f657', 'f658', 'f659', 'f660', 'f661', 'f662', 'f663', 'f664', 'f665', 'f666', 'f667', 'f668', 'f669', 'f670', 'f671', 'f672', 'f673', 'f674', 'f675', 'f676', 'f677', 'f678', 'f679', 'f680', 'f681', 'f682', 'f683', 'f684', 'f685', 'f686', 'f687', 'f688', 'f689', 'f690', 'f691', 'f692', 'f693', 'f694', 'f695', 'f696', 'f697', 'f698', 'f699', 'f700', 'f701', 'f702', 'f703', 'f704', 'f705', 'f706', 'f707', 'f708', 'f709', 'f710', 'f711', 'f712', 'f713', 'f714', 'f715', 'f716', 'f717', 'f718', 'f719', 'f720', 'f721', 'f722', 'f723', 'f724', 'f725', 'f726', 'f727', 'f728', 'f729', 'f730', 'f731', 'f732', 'f733', 'f734', 'f735', 'f736', 'f737', 'f738', 'f739', 'f740', 'f741', 'f742', 'f743', 'f744', 'f745', 'f746', 'f747', 'f748', 'f749', 'f750', 'f751', 'f752', 'f753', 'f754', 'f755', 'f756', 'f757', 'f758', 'f759', 'f760', 'f761', 'f762', 'f763', 'f764', 'f765', 'f766', 'f767', 'f768', 'f769', 'f770', 'f771', 'f772', 'f773', 'f774', 'f775', 'f776', 'f777', 'f778', 'f779', 'f780', 'f781', 'f782', 'f783'] ['f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f20', 'f21', 'f22', 'f23', 'f24', 'f25', 'f26', 'f27', 'f28', 'f29', 'f30', 'f31', 'f32', 'f33', 'f34', 'f35', 'f36', 'f37', 'f38', 'f39', 'f40', 'f41', 'f42', 'f43', 'f44', 'f45', 'f46', 'f47', 'f48', 'f49', 'f50', 'f51', 'f52', 'f53', 'f54', 'f55', 'f56', 'f57', 'f58', 'f59', 'f60', 'f61', 'f62', 'f63', 'f64', 'f65', 'f66', 'f67', 'f68', 'f69', 'f70', 'f71', 'f72', 'f73', 'f74', 'f75', 'f76', 'f77', 'f78', 'f79', 'f80', 'f81', 'f82', 'f83', 'f84', 'f85', 'f86', 'f87', 'f88', 'f89', 'f90', 'f91', 'f92', 'f93', 'f94', 'f95', 'f96', 'f97', 'f98', 'f99', 'f100', 'f101', 'f102', 'f103', 'f104', 'f105', 'f106', 'f107', 'f108', 'f109', 'f110', 'f111', 'f112', 'f113', 'f114', 'f115', 'f116', 'f117', 'f118', 'f119', 'f120', 'f121', 'f122', 'f123', 'f124', 'f125', 'f126', 'f127', 'f128', 'f129', 'f130', 'f131', 'f132', 'f133', 'f134', 'f135', 'f136', 'f137', 'f138', 'f139', 'f140', 'f141', 'f142', 'f143', 'f144', 'f145', 'f146', 'f147', 'f148', 'f149', 'f150', 'f151', 'f152', 'f153', 'f154', 'f155', 'f156', 'f157', 'f158', 'f159', 'f160', 'f161', 'f162', 'f163', 'f164', 'f165', 'f166', 'f167', 'f168', 'f169', 'f170', 'f171', 'f172', 'f173', 'f174', 'f175', 'f176', 'f177', 'f178', 'f179', 'f180', 'f181', 'f182', 'f183', 'f184', 'f185', 'f186', 'f187', 'f188', 'f189', 'f190', 'f191', 'f192', 'f193', 'f194', 'f195', 'f196', 'f197', 'f198', 'f199', 'f200', 'f201', 'f202', 'f203', 'f204', 'f205', 'f206', 'f207', 'f208', 'f209', 'f210', 'f211', 'f212', 'f213', 'f214', 'f215', 'f216', 'f217', 'f218', 'f219', 'f220', 'f221', 'f222', 'f223', 'f224', 'f225', 'f226', 'f227', 'f228', 'f229', 'f230', 'f231', 'f232', 'f233', 'f234', 'f235', 'f236', 'f237', 'f238', 'f239', 'f240', 'f241', 'f242', 'f243', 'f244', 'f245', 'f246', 'f247', 'f248', 'f249', 'f250', 'f251', 'f252', 'f253', 'f254', 'f255', 'f256', 'f257', 'f258', 'f259', 'f260', 'f261', 'f262', 'f263', 'f264', 'f265', 'f266', 'f267', 'f268', 'f269', 'f270', 'f271', 'f272', 'f273', 'f274', 'f275', 'f276', 'f277', 'f278', 'f279', 'f280', 'f281', 'f282', 'f283', 'f284', 'f285', 'f286', 'f287', 'f288', 'f289', 'f290', 'f291', 'f292', 'f293', 'f294', 'f295', 'f296', 'f297', 'f298', 'f299', 'f300', 'f301', 'f302', 'f303', 'f304', 'f305', 'f306', 'f307', 'f308', 'f309', 'f310', 'f311', 'f312', 'f313', 'f314', 'f315', 'f316', 'f317', 'f318', 'f319', 'f320', 'f321', 'f322', 'f323', 'f324', 'f325', 'f326', 'f327', 'f328', 'f329', 'f330', 'f331', 'f332', 'f333', 'f334', 'f335', 'f336', 'f337', 'f338', 'f339', 'f340', 'f341', 'f342', 'f343', 'f344', 'f345', 'f346', 'f347', 'f348', 'f349', 'f350', 'f351', 'f352', 'f353', 'f354', 'f355', 'f356', 'f357', 'f358', 'f359', 'f360', 'f361', 'f362', 'f363', 'f364', 'f365', 'f366', 'f367', 'f368', 'f369', 'f370', 'f371', 'f372', 'f373', 'f374', 'f375', 'f376', 'f377', 'f378', 'f379', 'f380', 'f381', 'f382', 'f383', 'f384', 'f385', 'f386', 'f387', 'f388', 'f389', 'f390', 'f391', 'f392', 'f393', 'f394', 'f395', 'f396', 'f397', 'f398', 'f399', 'f400', 'f401', 'f402', 'f403', 'f404', 'f405', 'f406', 'f407', 'f408', 'f409', 'f410', 'f411', 'f412', 'f413', 'f414', 'f415', 'f416', 'f417', 'f418', 'f419', 'f420', 'f421', 'f422', 'f423', 'f424', 'f425', 'f426', 'f427', 'f428', 'f429', 'f430', 'f431', 'f432', 'f433', 'f434', 'f435', 'f436', 'f437', 'f438', 'f439', 'f440', 'f441', 'f442', 'f443', 'f444', 'f445', 'f446', 'f447', 'f448', 'f449', 'f450', 'f451', 'f452', 'f453', 'f454', 'f455', 'f456', 'f457', 'f458', 'f459', 'f460', 'f461', 'f462', 'f463', 'f464', 'f465', 'f466', 'f467', 'f468', 'f469', 'f470', 'f471', 'f472', 'f473', 'f474', 'f475', 'f476', 'f477', 'f478', 'f479', 'f480', 'f481', 'f482', 'f483', 'f484', 'f485', 'f486', 'f487', 'f488', 'f489', 'f490', 'f491', 'f492', 'f493', 'f494', 'f495', 'f496', 'f497', 'f498', 'f499', 'f500', 'f501', 'f502', 'f503', 'f504', 'f505', 'f506', 'f507', 'f508', 'f509', 'f510', 'f511', 'f512', 'f513', 'f514', 'f515', 'f516', 'f517', 'f518', 'f519', 'f520', 'f521', 'f522', 'f523', 'f524', 'f525', 'f526', 'f527', 'f528', 'f529', 'f530', 'f531', 'f532', 'f533', 'f534', 'f535', 'f536', 'f537', 'f538', 'f539', 'f540', 'f541', 'f542', 'f543', 'f544', 'f545', 'f546', 'f547']\nexpected f582, f612, f619, f579, f750, f763, f592, f615, f720, f691, f744, f667, f578, f662, f680, f760, f569, f605, f654, f548, f710, f737, f611, f561, f734, f559, f717, f732, f715, f643, f640, f748, f586, f758, f577, f555, f679, f573, f597, f591, f585, f689, f778, f762, f730, f774, f738, f625, f777, f652, f665, f727, f768, f598, f651, f660, f590, f637, f589, f550, f549, f782, f735, f692, f563, f572, f616, f646, f702, f629, f602, f593, f671, f638, f564, f594, f584, f728, f636, f568, f669, f633, f711, f644, f713, f666, f716, f648, f740, f678, f686, f697, f688, f575, f754, f712, f772, f718, f607, f622, f639, f690, f574, f596, f709, f769, f631, f684, f776, f668, f746, f604, f608, f781, f752, f779, f626, f642, f724, f623, f780, f656, f620, f556, f650, f566, f719, f771, f751, f551, f609, f681, f683, f693, f759, f647, f706, f757, f687, f726, f649, f576, f595, f658, f610, f632, f783, f745, f773, f565, f580, f731, f756, f588, f645, f721, f707, f677, f554, f747, f641, f614, f583, f676, f570, f558, f560, f770, f694, f562, f663, f613, f673, f741, f685, f736, f743, f700, f661, f664, f714, f557, f600, f674, f701, f657, f617, f766, f675, f739, f749, f634, f659, f775, f630, f723, f621, f703, f753, f603, f699, f599, f729, f628, f672, f567, f581, f624, f761, f704, f655, f696, f682, f695, f755, f635, f765, f722, f767, f742, f670, f618, f627, f587, f708, f764, f606, f553, f698, f653, f552, f571, f601, f725, f733, f705 in input data",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mValueError\u001b[0m                                Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-13-a802bcfe3d57>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0my_pred\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mfull_pipeline_m\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpredict\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX_test\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/utils/metaestimators.py\u001b[0m in \u001b[0;36m<lambda>\u001b[0;34m(*args, **kwargs)\u001b[0m\n\u001b[1;32m    114\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    115\u001b[0m         \u001b[0;31m# lambda, but not partial, allows help() to work with update_wrapper\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 116\u001b[0;31m         \u001b[0mout\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mlambda\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mobj\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    117\u001b[0m         \u001b[0;31m# update the docstring of the returned function\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    118\u001b[0m         \u001b[0mupdate_wrapper\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mout\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfn\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/sklearn/pipeline.py\u001b[0m in \u001b[0;36mpredict\u001b[0;34m(self, X, **predict_params)\u001b[0m\n\u001b[1;32m    418\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0m_\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mname\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtransform\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_iter\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mwith_final\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mFalse\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    419\u001b[0m             \u001b[0mXt\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtransform\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtransform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mXt\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 420\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msteps\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpredict\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mXt\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mpredict_params\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    421\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    422\u001b[0m     \u001b[0;34m@\u001b[0m\u001b[0mif_delegate_has_method\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mdelegate\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'_final_estimator'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/xgboost/sklearn.py\u001b[0m in \u001b[0;36mpredict\u001b[0;34m(self, data, output_margin, ntree_limit, validate_features)\u001b[0m\n\u001b[1;32m    789\u001b[0m                                                  \u001b[0moutput_margin\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0moutput_margin\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    790\u001b[0m                                                  \u001b[0mntree_limit\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mntree_limit\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 791\u001b[0;31m                                                  validate_features=validate_features)\n\u001b[0m\u001b[1;32m    792\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0moutput_margin\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    793\u001b[0m             \u001b[0;31m# If output_margin is active, simply return the scores\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/xgboost/core.py\u001b[0m in \u001b[0;36mpredict\u001b[0;34m(self, data, output_margin, ntree_limit, pred_leaf, pred_contribs, approx_contribs, pred_interactions, validate_features)\u001b[0m\n\u001b[1;32m   1282\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1283\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mvalidate_features\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1284\u001b[0;31m             \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_validate_features\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mdata\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1285\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1286\u001b[0m         \u001b[0mlength\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mc_bst_ulong\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/opt/anaconda3/lib/python3.7/site-packages/xgboost/core.py\u001b[0m in \u001b[0;36m_validate_features\u001b[0;34m(self, data)\u001b[0m\n\u001b[1;32m   1688\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1689\u001b[0m                 raise ValueError(msg.format(self.feature_names,\n\u001b[0;32m-> 1690\u001b[0;31m                                             data.feature_names))\n\u001b[0m\u001b[1;32m   1691\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1692\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mget_split_value_histogram\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfeature\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfmap\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m''\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mbins\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mNone\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mas_pandas\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mTrue\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mValueError\u001b[0m: feature_names mismatch: ['f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f20', 'f21', 'f22', 'f23', 'f24', 'f25', 'f26', 'f27', 'f28', 'f29', 'f30', 'f31', 'f32', 'f33', 'f34', 'f35', 'f36', 'f37', 'f38', 'f39', 'f40', 'f41', 'f42', 'f43', 'f44', 'f45', 'f46', 'f47', 'f48', 'f49', 'f50', 'f51', 'f52', 'f53', 'f54', 'f55', 'f56', 'f57', 'f58', 'f59', 'f60', 'f61', 'f62', 'f63', 'f64', 'f65', 'f66', 'f67', 'f68', 'f69', 'f70', 'f71', 'f72', 'f73', 'f74', 'f75', 'f76', 'f77', 'f78', 'f79', 'f80', 'f81', 'f82', 'f83', 'f84', 'f85', 'f86', 'f87', 'f88', 'f89', 'f90', 'f91', 'f92', 'f93', 'f94', 'f95', 'f96', 'f97', 'f98', 'f99', 'f100', 'f101', 'f102', 'f103', 'f104', 'f105', 'f106', 'f107', 'f108', 'f109', 'f110', 'f111', 'f112', 'f113', 'f114', 'f115', 'f116', 'f117', 'f118', 'f119', 'f120', 'f121', 'f122', 'f123', 'f124', 'f125', 'f126', 'f127', 'f128', 'f129', 'f130', 'f131', 'f132', 'f133', 'f134', 'f135', 'f136', 'f137', 'f138', 'f139', 'f140', 'f141', 'f142', 'f143', 'f144', 'f145', 'f146', 'f147', 'f148', 'f149', 'f150', 'f151', 'f152', 'f153', 'f154', 'f155', 'f156', 'f157', 'f158', 'f159', 'f160', 'f161', 'f162', 'f163', 'f164', 'f165', 'f166', 'f167', 'f168', 'f169', 'f170', 'f171', 'f172', 'f173', 'f174', 'f175', 'f176', 'f177', 'f178', 'f179', 'f180', 'f181', 'f182', 'f183', 'f184', 'f185', 'f186', 'f187', 'f188', 'f189', 'f190', 'f191', 'f192', 'f193', 'f194', 'f195', 'f196', 'f197', 'f198', 'f199', 'f200', 'f201', 'f202', 'f203', 'f204', 'f205', 'f206', 'f207', 'f208', 'f209', 'f210', 'f211', 'f212', 'f213', 'f214', 'f215', 'f216', 'f217', 'f218', 'f219', 'f220', 'f221', 'f222', 'f223', 'f224', 'f225', 'f226', 'f227', 'f228', 'f229', 'f230', 'f231', 'f232', 'f233', 'f234', 'f235', 'f236', 'f237', 'f238', 'f239', 'f240', 'f241', 'f242', 'f243', 'f244', 'f245', 'f246', 'f247', 'f248', 'f249', 'f250', 'f251', 'f252', 'f253', 'f254', 'f255', 'f256', 'f257', 'f258', 'f259', 'f260', 'f261', 'f262', 'f263', 'f264', 'f265', 'f266', 'f267', 'f268', 'f269', 'f270', 'f271', 'f272', 'f273', 'f274', 'f275', 'f276', 'f277', 'f278', 'f279', 'f280', 'f281', 'f282', 'f283', 'f284', 'f285', 'f286', 'f287', 'f288', 'f289', 'f290', 'f291', 'f292', 'f293', 'f294', 'f295', 'f296', 'f297', 'f298', 'f299', 'f300', 'f301', 'f302', 'f303', 'f304', 'f305', 'f306', 'f307', 'f308', 'f309', 'f310', 'f311', 'f312', 'f313', 'f314', 'f315', 'f316', 'f317', 'f318', 'f319', 'f320', 'f321', 'f322', 'f323', 'f324', 'f325', 'f326', 'f327', 'f328', 'f329', 'f330', 'f331', 'f332', 'f333', 'f334', 'f335', 'f336', 'f337', 'f338', 'f339', 'f340', 'f341', 'f342', 'f343', 'f344', 'f345', 'f346', 'f347', 'f348', 'f349', 'f350', 'f351', 'f352', 'f353', 'f354', 'f355', 'f356', 'f357', 'f358', 'f359', 'f360', 'f361', 'f362', 'f363', 'f364', 'f365', 'f366', 'f367', 'f368', 'f369', 'f370', 'f371', 'f372', 'f373', 'f374', 'f375', 'f376', 'f377', 'f378', 'f379', 'f380', 'f381', 'f382', 'f383', 'f384', 'f385', 'f386', 'f387', 'f388', 'f389', 'f390', 'f391', 'f392', 'f393', 'f394', 'f395', 'f396', 'f397', 'f398', 'f399', 'f400', 'f401', 'f402', 'f403', 'f404', 'f405', 'f406', 'f407', 'f408', 'f409', 'f410', 'f411', 'f412', 'f413', 'f414', 'f415', 'f416', 'f417', 'f418', 'f419', 'f420', 'f421', 'f422', 'f423', 'f424', 'f425', 'f426', 'f427', 'f428', 'f429', 'f430', 'f431', 'f432', 'f433', 'f434', 'f435', 'f436', 'f437', 'f438', 'f439', 'f440', 'f441', 'f442', 'f443', 'f444', 'f445', 'f446', 'f447', 'f448', 'f449', 'f450', 'f451', 'f452', 'f453', 'f454', 'f455', 'f456', 'f457', 'f458', 'f459', 'f460', 'f461', 'f462', 'f463', 'f464', 'f465', 'f466', 'f467', 'f468', 'f469', 'f470', 'f471', 'f472', 'f473', 'f474', 'f475', 'f476', 'f477', 'f478', 'f479', 'f480', 'f481', 'f482', 'f483', 'f484', 'f485', 'f486', 'f487', 'f488', 'f489', 'f490', 'f491', 'f492', 'f493', 'f494', 'f495', 'f496', 'f497', 'f498', 'f499', 'f500', 'f501', 'f502', 'f503', 'f504', 'f505', 'f506', 'f507', 'f508', 'f509', 'f510', 'f511', 'f512', 'f513', 'f514', 'f515', 'f516', 'f517', 'f518', 'f519', 'f520', 'f521', 'f522', 'f523', 'f524', 'f525', 'f526', 'f527', 'f528', 'f529', 'f530', 'f531', 'f532', 'f533', 'f534', 'f535', 'f536', 'f537', 'f538', 'f539', 'f540', 'f541', 'f542', 'f543', 'f544', 'f545', 'f546', 'f547', 'f548', 'f549', 'f550', 'f551', 'f552', 'f553', 'f554', 'f555', 'f556', 'f557', 'f558', 'f559', 'f560', 'f561', 'f562', 'f563', 'f564', 'f565', 'f566', 'f567', 'f568', 'f569', 'f570', 'f571', 'f572', 'f573', 'f574', 'f575', 'f576', 'f577', 'f578', 'f579', 'f580', 'f581', 'f582', 'f583', 'f584', 'f585', 'f586', 'f587', 'f588', 'f589', 'f590', 'f591', 'f592', 'f593', 'f594', 'f595', 'f596', 'f597', 'f598', 'f599', 'f600', 'f601', 'f602', 'f603', 'f604', 'f605', 'f606', 'f607', 'f608', 'f609', 'f610', 'f611', 'f612', 'f613', 'f614', 'f615', 'f616', 'f617', 'f618', 'f619', 'f620', 'f621', 'f622', 'f623', 'f624', 'f625', 'f626', 'f627', 'f628', 'f629', 'f630', 'f631', 'f632', 'f633', 'f634', 'f635', 'f636', 'f637', 'f638', 'f639', 'f640', 'f641', 'f642', 'f643', 'f644', 'f645', 'f646', 'f647', 'f648', 'f649', 'f650', 'f651', 'f652', 'f653', 'f654', 'f655', 'f656', 'f657', 'f658', 'f659', 'f660', 'f661', 'f662', 'f663', 'f664', 'f665', 'f666', 'f667', 'f668', 'f669', 'f670', 'f671', 'f672', 'f673', 'f674', 'f675', 'f676', 'f677', 'f678', 'f679', 'f680', 'f681', 'f682', 'f683', 'f684', 'f685', 'f686', 'f687', 'f688', 'f689', 'f690', 'f691', 'f692', 'f693', 'f694', 'f695', 'f696', 'f697', 'f698', 'f699', 'f700', 'f701', 'f702', 'f703', 'f704', 'f705', 'f706', 'f707', 'f708', 'f709', 'f710', 'f711', 'f712', 'f713', 'f714', 'f715', 'f716', 'f717', 'f718', 'f719', 'f720', 'f721', 'f722', 'f723', 'f724', 'f725', 'f726', 'f727', 'f728', 'f729', 'f730', 'f731', 'f732', 'f733', 'f734', 'f735', 'f736', 'f737', 'f738', 'f739', 'f740', 'f741', 'f742', 'f743', 'f744', 'f745', 'f746', 'f747', 'f748', 'f749', 'f750', 'f751', 'f752', 'f753', 'f754', 'f755', 'f756', 'f757', 'f758', 'f759', 'f760', 'f761', 'f762', 'f763', 'f764', 'f765', 'f766', 'f767', 'f768', 'f769', 'f770', 'f771', 'f772', 'f773', 'f774', 'f775', 'f776', 'f777', 'f778', 'f779', 'f780', 'f781', 'f782', 'f783'] ['f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f20', 'f21', 'f22', 'f23', 'f24', 'f25', 'f26', 'f27', 'f28', 'f29', 'f30', 'f31', 'f32', 'f33', 'f34', 'f35', 'f36', 'f37', 'f38', 'f39', 'f40', 'f41', 'f42', 'f43', 'f44', 'f45', 'f46', 'f47', 'f48', 'f49', 'f50', 'f51', 'f52', 'f53', 'f54', 'f55', 'f56', 'f57', 'f58', 'f59', 'f60', 'f61', 'f62', 'f63', 'f64', 'f65', 'f66', 'f67', 'f68', 'f69', 'f70', 'f71', 'f72', 'f73', 'f74', 'f75', 'f76', 'f77', 'f78', 'f79', 'f80', 'f81', 'f82', 'f83', 'f84', 'f85', 'f86', 'f87', 'f88', 'f89', 'f90', 'f91', 'f92', 'f93', 'f94', 'f95', 'f96', 'f97', 'f98', 'f99', 'f100', 'f101', 'f102', 'f103', 'f104', 'f105', 'f106', 'f107', 'f108', 'f109', 'f110', 'f111', 'f112', 'f113', 'f114', 'f115', 'f116', 'f117', 'f118', 'f119', 'f120', 'f121', 'f122', 'f123', 'f124', 'f125', 'f126', 'f127', 'f128', 'f129', 'f130', 'f131', 'f132', 'f133', 'f134', 'f135', 'f136', 'f137', 'f138', 'f139', 'f140', 'f141', 'f142', 'f143', 'f144', 'f145', 'f146', 'f147', 'f148', 'f149', 'f150', 'f151', 'f152', 'f153', 'f154', 'f155', 'f156', 'f157', 'f158', 'f159', 'f160', 'f161', 'f162', 'f163', 'f164', 'f165', 'f166', 'f167', 'f168', 'f169', 'f170', 'f171', 'f172', 'f173', 'f174', 'f175', 'f176', 'f177', 'f178', 'f179', 'f180', 'f181', 'f182', 'f183', 'f184', 'f185', 'f186', 'f187', 'f188', 'f189', 'f190', 'f191', 'f192', 'f193', 'f194', 'f195', 'f196', 'f197', 'f198', 'f199', 'f200', 'f201', 'f202', 'f203', 'f204', 'f205', 'f206', 'f207', 'f208', 'f209', 'f210', 'f211', 'f212', 'f213', 'f214', 'f215', 'f216', 'f217', 'f218', 'f219', 'f220', 'f221', 'f222', 'f223', 'f224', 'f225', 'f226', 'f227', 'f228', 'f229', 'f230', 'f231', 'f232', 'f233', 'f234', 'f235', 'f236', 'f237', 'f238', 'f239', 'f240', 'f241', 'f242', 'f243', 'f244', 'f245', 'f246', 'f247', 'f248', 'f249', 'f250', 'f251', 'f252', 'f253', 'f254', 'f255', 'f256', 'f257', 'f258', 'f259', 'f260', 'f261', 'f262', 'f263', 'f264', 'f265', 'f266', 'f267', 'f268', 'f269', 'f270', 'f271', 'f272', 'f273', 'f274', 'f275', 'f276', 'f277', 'f278', 'f279', 'f280', 'f281', 'f282', 'f283', 'f284', 'f285', 'f286', 'f287', 'f288', 'f289', 'f290', 'f291', 'f292', 'f293', 'f294', 'f295', 'f296', 'f297', 'f298', 'f299', 'f300', 'f301', 'f302', 'f303', 'f304', 'f305', 'f306', 'f307', 'f308', 'f309', 'f310', 'f311', 'f312', 'f313', 'f314', 'f315', 'f316', 'f317', 'f318', 'f319', 'f320', 'f321', 'f322', 'f323', 'f324', 'f325', 'f326', 'f327', 'f328', 'f329', 'f330', 'f331', 'f332', 'f333', 'f334', 'f335', 'f336', 'f337', 'f338', 'f339', 'f340', 'f341', 'f342', 'f343', 'f344', 'f345', 'f346', 'f347', 'f348', 'f349', 'f350', 'f351', 'f352', 'f353', 'f354', 'f355', 'f356', 'f357', 'f358', 'f359', 'f360', 'f361', 'f362', 'f363', 'f364', 'f365', 'f366', 'f367', 'f368', 'f369', 'f370', 'f371', 'f372', 'f373', 'f374', 'f375', 'f376', 'f377', 'f378', 'f379', 'f380', 'f381', 'f382', 'f383', 'f384', 'f385', 'f386', 'f387', 'f388', 'f389', 'f390', 'f391', 'f392', 'f393', 'f394', 'f395', 'f396', 'f397', 'f398', 'f399', 'f400', 'f401', 'f402', 'f403', 'f404', 'f405', 'f406', 'f407', 'f408', 'f409', 'f410', 'f411', 'f412', 'f413', 'f414', 'f415', 'f416', 'f417', 'f418', 'f419', 'f420', 'f421', 'f422', 'f423', 'f424', 'f425', 'f426', 'f427', 'f428', 'f429', 'f430', 'f431', 'f432', 'f433', 'f434', 'f435', 'f436', 'f437', 'f438', 'f439', 'f440', 'f441', 'f442', 'f443', 'f444', 'f445', 'f446', 'f447', 'f448', 'f449', 'f450', 'f451', 'f452', 'f453', 'f454', 'f455', 'f456', 'f457', 'f458', 'f459', 'f460', 'f461', 'f462', 'f463', 'f464', 'f465', 'f466', 'f467', 'f468', 'f469', 'f470', 'f471', 'f472', 'f473', 'f474', 'f475', 'f476', 'f477', 'f478', 'f479', 'f480', 'f481', 'f482', 'f483', 'f484', 'f485', 'f486', 'f487', 'f488', 'f489', 'f490', 'f491', 'f492', 'f493', 'f494', 'f495', 'f496', 'f497', 'f498', 'f499', 'f500', 'f501', 'f502', 'f503', 'f504', 'f505', 'f506', 'f507', 'f508', 'f509', 'f510', 'f511', 'f512', 'f513', 'f514', 'f515', 'f516', 'f517', 'f518', 'f519', 'f520', 'f521', 'f522', 'f523', 'f524', 'f525', 'f526', 'f527', 'f528', 'f529', 'f530', 'f531', 'f532', 'f533', 'f534', 'f535', 'f536', 'f537', 'f538', 'f539', 'f540', 'f541', 'f542', 'f543', 'f544', 'f545', 'f546', 'f547']\nexpected f582, f612, f619, f579, f750, f763, f592, f615, f720, f691, f744, f667, f578, f662, f680, f760, f569, f605, f654, f548, f710, f737, f611, f561, f734, f559, f717, f732, f715, f643, f640, f748, f586, f758, f577, f555, f679, f573, f597, f591, f585, f689, f778, f762, f730, f774, f738, f625, f777, f652, f665, f727, f768, f598, f651, f660, f590, f637, f589, f550, f549, f782, f735, f692, f563, f572, f616, f646, f702, f629, f602, f593, f671, f638, f564, f594, f584, f728, f636, f568, f669, f633, f711, f644, f713, f666, f716, f648, f740, f678, f686, f697, f688, f575, f754, f712, f772, f718, f607, f622, f639, f690, f574, f596, f709, f769, f631, f684, f776, f668, f746, f604, f608, f781, f752, f779, f626, f642, f724, f623, f780, f656, f620, f556, f650, f566, f719, f771, f751, f551, f609, f681, f683, f693, f759, f647, f706, f757, f687, f726, f649, f576, f595, f658, f610, f632, f783, f745, f773, f565, f580, f731, f756, f588, f645, f721, f707, f677, f554, f747, f641, f614, f583, f676, f570, f558, f560, f770, f694, f562, f663, f613, f673, f741, f685, f736, f743, f700, f661, f664, f714, f557, f600, f674, f701, f657, f617, f766, f675, f739, f749, f634, f659, f775, f630, f723, f621, f703, f753, f603, f699, f599, f729, f628, f672, f567, f581, f624, f761, f704, f655, f696, f682, f695, f755, f635, f765, f722, f767, f742, f670, f618, f627, f587, f708, f764, f606, f553, f698, f653, f552, f571, f601, f725, f733, f705 in input data"
+     ]
+    }
+   ],
+   "source": [
+    "y_pred = full_pipeline_m.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy score is:  0.5753978277342763\n",
+      "F1 score is:  0.5513210689076509\n",
+      "Cohen score is:  0.45712380345234527\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Accuracy score is: ', accuracy_score(y_test, y_pred))\n",
+    "print('F1 score is: ',f1_score(y_test, y_pred,average='weighted'))\n",
+    "print('Cohen score is: ',cohen_kappa_score(y_test, y_pred))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<b> Saving Model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model_num = 'xgb_final_v2'\n",
+    "with open('model_{}.pickle'.format(model_num), 'wb') as f:\n",
+    "    pickle.dump(full_pipeline_m, f)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<b>Opening Model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model_num = 'xgb_final_v2'\n",
+    "with open('model_xgb_final.pickle'.format(model_num), 'rb') as f:\n",
+    "    full_pipeline_m = pickle.load(f)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import xgboost as xgb"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0.01010036 0.00437335 0.00638613 0.00402752 0.00668538 0.00436523\n",
+      " 0.         0.00416128 0.00443942 0.01883804 0.00336411 0.00433515\n",
+      " 0.01486567 0.011138   0.01198572 0.00391592 0.00980122 0.00367338\n",
+      " 0.00310102 0.00480563 0.00341944 0.00435238 0.03712924 0.01611847\n",
+      " 0.00647504 0.00696166 0.0048858  0.00366417 0.00944866 0.00521111\n",
+      " 0.00705771 0.00507368 0.00384979 0.00818194 0.00781101 0.00613259\n",
+      " 0.0106976  0.00417812 0.00625978 0.01449963 0.00381481 0.00853573\n",
+      " 0.00900088 0.00372942 0.01692121 0.01087124 0.00645911 0.00400743\n",
+      " 0.00650438 0.00518068 0.01015138 0.00803514 0.02248611 0.00338265\n",
+      " 0.00476721 0.00500423 0.00547179 0.00347732 0.00690357 0.00892792\n",
+      " 0.00446831 0.00408059 0.00614647 0.00440308 0.00568416 0.00543733\n",
+      " 0.00561155 0.00543822 0.00611986 0.00414895 0.00360847 0.00365484\n",
+      " 0.00457363 0.00543128 0.00392229 0.05657213 0.00580435 0.00590406\n",
+      " 0.0059951  0.005959   0.00444816 0.005534   0.00588788 0.00585536\n",
+      " 0.00954679 0.00583403 0.04370526 0.00515741 0.00496884 0.00655451\n",
+      " 0.00463121 0.00654107 0.00645104 0.00482165 0.00618027 0.00425299\n",
+      " 0.00625913 0.0048967  0.00551602 0.00611879 0.00510656 0.00757566\n",
+      " 0.00530109 0.00575108 0.00496104 0.01425084 0.00651918 0.00504332\n",
+      " 0.0163103  0.0056045  0.00498168 0.0125347  0.00546065 0.00762989\n",
+      " 0.00508693 0.00506137 0.0068181  0.00621072 0.0078157  0.00449932\n",
+      " 0.00343094 0.00370283 0.01099694 0.00343697 0.00412007 0.00330244\n",
+      " 0.00367266 0.00349918 0.00990626 0.01382542 0.01338898 0.00933424\n",
+      " 0.00578611 0.00354707]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(full_pipeline_m.named_steps[\"rfm\"].feature_importances_)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Getting the important features' names mission"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "d = pd.read_csv('train.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "d.drop(['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36'],inplace = True, axis = 1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for i in ['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36']:\n",
+    "    cats.remove(i)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Id</th>\n",
+       "      <th>Product_Info_4</th>\n",
+       "      <th>Ins_Age</th>\n",
+       "      <th>Ht</th>\n",
+       "      <th>Wt</th>\n",
+       "      <th>BMI</th>\n",
+       "      <th>Employment_Info_1</th>\n",
+       "      <th>Employment_Info_4</th>\n",
+       "      <th>Employment_Info_6</th>\n",
+       "      <th>Insurance_History_5</th>\n",
+       "      <th>...</th>\n",
+       "      <th>Medical_History_35_3</th>\n",
+       "      <th>Medical_History_37_2</th>\n",
+       "      <th>Medical_History_37_3</th>\n",
+       "      <th>Medical_History_38_2</th>\n",
+       "      <th>Medical_History_39_2</th>\n",
+       "      <th>Medical_History_39_3</th>\n",
+       "      <th>Medical_History_40_2</th>\n",
+       "      <th>Medical_History_40_3</th>\n",
+       "      <th>Medical_History_41_2</th>\n",
+       "      <th>Medical_History_41_3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>0.641791</td>\n",
+       "      <td>0.581818</td>\n",
+       "      <td>0.148536</td>\n",
+       "      <td>0.323008</td>\n",
+       "      <td>0.028</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0.000667</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>5</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>0.059701</td>\n",
+       "      <td>0.600000</td>\n",
+       "      <td>0.131799</td>\n",
+       "      <td>0.272288</td>\n",
+       "      <td>0.000</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>0.0018</td>\n",
+       "      <td>0.000133</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>6</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>0.029851</td>\n",
+       "      <td>0.745455</td>\n",
+       "      <td>0.288703</td>\n",
+       "      <td>0.428780</td>\n",
+       "      <td>0.030</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>0.0300</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>7</td>\n",
+       "      <td>0.487179</td>\n",
+       "      <td>0.164179</td>\n",
+       "      <td>0.672727</td>\n",
+       "      <td>0.205021</td>\n",
+       "      <td>0.352438</td>\n",
+       "      <td>0.042</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>0.2000</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>8</td>\n",
+       "      <td>0.230769</td>\n",
+       "      <td>0.417910</td>\n",
+       "      <td>0.654545</td>\n",
+       "      <td>0.234310</td>\n",
+       "      <td>0.424046</td>\n",
+       "      <td>0.027</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>0.0500</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>59376</th>\n",
+       "      <td>79142</td>\n",
+       "      <td>0.230769</td>\n",
+       "      <td>0.074627</td>\n",
+       "      <td>0.709091</td>\n",
+       "      <td>0.320084</td>\n",
+       "      <td>0.519103</td>\n",
+       "      <td>0.020</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>0.0250</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>59377</th>\n",
+       "      <td>79143</td>\n",
+       "      <td>0.230769</td>\n",
+       "      <td>0.432836</td>\n",
+       "      <td>0.800000</td>\n",
+       "      <td>0.403766</td>\n",
+       "      <td>0.551119</td>\n",
+       "      <td>0.100</td>\n",
+       "      <td>0.00001</td>\n",
+       "      <td>0.3500</td>\n",
+       "      <td>0.000267</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>59378</th>\n",
+       "      <td>79144</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>0.104478</td>\n",
+       "      <td>0.745455</td>\n",
+       "      <td>0.246862</td>\n",
+       "      <td>0.360969</td>\n",
+       "      <td>0.035</td>\n",
+       "      <td>0.00000</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>59379</th>\n",
+       "      <td>79145</td>\n",
+       "      <td>0.230769</td>\n",
+       "      <td>0.507463</td>\n",
+       "      <td>0.690909</td>\n",
+       "      <td>0.276151</td>\n",
+       "      <td>0.462452</td>\n",
+       "      <td>0.038</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>59380</th>\n",
+       "      <td>79146</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>0.447761</td>\n",
+       "      <td>0.781818</td>\n",
+       "      <td>0.382845</td>\n",
+       "      <td>0.539563</td>\n",
+       "      <td>0.123</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0.3000</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>59381 rows × 827 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "          Id  Product_Info_4   Ins_Age        Ht        Wt       BMI  \\\n",
+       "0          2        0.076923  0.641791  0.581818  0.148536  0.323008   \n",
+       "1          5        0.076923  0.059701  0.600000  0.131799  0.272288   \n",
+       "2          6        0.076923  0.029851  0.745455  0.288703  0.428780   \n",
+       "3          7        0.487179  0.164179  0.672727  0.205021  0.352438   \n",
+       "4          8        0.230769  0.417910  0.654545  0.234310  0.424046   \n",
+       "...      ...             ...       ...       ...       ...       ...   \n",
+       "59376  79142        0.230769  0.074627  0.709091  0.320084  0.519103   \n",
+       "59377  79143        0.230769  0.432836  0.800000  0.403766  0.551119   \n",
+       "59378  79144        0.076923  0.104478  0.745455  0.246862  0.360969   \n",
+       "59379  79145        0.230769  0.507463  0.690909  0.276151  0.462452   \n",
+       "59380  79146        0.076923  0.447761  0.781818  0.382845  0.539563   \n",
+       "\n",
+       "       Employment_Info_1  Employment_Info_4  Employment_Info_6  \\\n",
+       "0                  0.028            0.00000                NaN   \n",
+       "1                  0.000            0.00000             0.0018   \n",
+       "2                  0.030            0.00000             0.0300   \n",
+       "3                  0.042            0.00000             0.2000   \n",
+       "4                  0.027            0.00000             0.0500   \n",
+       "...                  ...                ...                ...   \n",
+       "59376              0.020            0.00000             0.0250   \n",
+       "59377              0.100            0.00001             0.3500   \n",
+       "59378              0.035            0.00000                NaN   \n",
+       "59379              0.038                NaN                NaN   \n",
+       "59380              0.123                NaN             0.3000   \n",
+       "\n",
+       "       Insurance_History_5  ...  Medical_History_35_3  Medical_History_37_2  \\\n",
+       "0                 0.000667  ...                     0                     1   \n",
+       "1                 0.000133  ...                     0                     1   \n",
+       "2                      NaN  ...                     0                     1   \n",
+       "3                      NaN  ...                     0                     1   \n",
+       "4                      NaN  ...                     0                     1   \n",
+       "...                    ...  ...                   ...                   ...   \n",
+       "59376                  NaN  ...                     0                     1   \n",
+       "59377             0.000267  ...                     0                     1   \n",
+       "59378                  NaN  ...                     0                     1   \n",
+       "59379                  NaN  ...                     0                     1   \n",
+       "59380                  NaN  ...                     0                     1   \n",
+       "\n",
+       "       Medical_History_37_3  Medical_History_38_2  Medical_History_39_2  \\\n",
+       "0                         0                     0                     0   \n",
+       "1                         0                     0                     0   \n",
+       "2                         0                     0                     0   \n",
+       "3                         0                     0                     0   \n",
+       "4                         0                     0                     0   \n",
+       "...                     ...                   ...                   ...   \n",
+       "59376                     0                     0                     0   \n",
+       "59377                     0                     0                     0   \n",
+       "59378                     0                     0                     0   \n",
+       "59379                     0                     0                     0   \n",
+       "59380                     0                     0                     0   \n",
+       "\n",
+       "       Medical_History_39_3  Medical_History_40_2  Medical_History_40_3  \\\n",
+       "0                         1                     0                     1   \n",
+       "1                         1                     0                     1   \n",
+       "2                         1                     0                     1   \n",
+       "3                         1                     0                     1   \n",
+       "4                         1                     0                     1   \n",
+       "...                     ...                   ...                   ...   \n",
+       "59376                     1                     0                     1   \n",
+       "59377                     1                     0                     1   \n",
+       "59378                     1                     0                     1   \n",
+       "59379                     1                     0                     1   \n",
+       "59380                     1                     0                     1   \n",
+       "\n",
+       "       Medical_History_41_2  Medical_History_41_3  \n",
+       "0                         0                     1  \n",
+       "1                         0                     0  \n",
+       "2                         0                     0  \n",
+       "3                         0                     0  \n",
+       "4                         0                     0  \n",
+       "...                     ...                   ...  \n",
+       "59376                     0                     1  \n",
+       "59377                     0                     0  \n",
+       "59378                     0                     0  \n",
+       "59379                     0                     1  \n",
+       "59380                     0                     0  \n",
+       "\n",
+       "[59381 rows x 827 columns]"
+      ]
+     },
+     "execution_count": 62,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pd.get_dummies(data = d, columns = cats, prefix = cats, drop_first = True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# d.drop(['Insurance_History_4','Insurance_History_7','Insurance_History_9','Medical_History_26','Medical_History_36'],inplace = True, axis = 1)\n",
+    "d.drop(['Medical_Keyword_11','Medical_Keyword_23','Medical_Keyword_48'],inplace = True, axis = 1)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Family_Hist_4'"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "d.columns[]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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D8h6TcyPEk0gIlIdSHeSRzngVmCCM+9xnarudN7fDmwtyViNMSbQ+vbtS0JCAocOHaJOnTqMGzeOhIQEfvjhBypUqECDBg145513AKhcuTLPPvss7du3R0To0aMHPXv25OTJk3Tt2pX09HTOnTvHrbfeyh//+EfvPmbPns19992H56vV6wpgjYicxzM3Hquqm/OKt1gSiIhcA6wBrgbOi8hgoAUQBsQ5l6lCgLmq+oWIhDjtV+O5jXcdntuBjTHmojV79uwL2h599FHvJazsHnzwQR588MEsbeXLlycxMTHHfYwdO9Zf80lVbedvQW4CmkBUtYHPxzp+uqzHc50t+3rn8ZxCGWOMCVL2m+jGGGNcsQRijDHGFUsgxhhjXLEEYowxxhVLIMYYY1yxBGKMMcYVSyDGGGNcsQRijDHGFUsgxhhjXLEEYowxxhVLIMYY4/BXkzzTpEmTEBEOHToEgKry1FNP0ahRIyIiIli7dq23b1xcHI0bN6Zx48bExcV528+ePctjjz1GkyZNaNasGfPmzQNgypQptGrViqioKG688UY2b87zOYZBIZAVCZ8SkS0iMk9ElovIryLynM/yuiKyxOmzSUSe9ln2kohsFZH1IjLfqRVijDEB1b9/fxYtWnRB+549e1i8eDH16tXztn399dfs2LGDHTt28O677/L4457nvR45coRx48axcuVKVq1axbhx47xVBF988UVq1KjB9u3b2bx5M507dwbg/vvvZ8OGDSQlJTFs2DCeffbZYjjawgvkwxTzqoeeAQxR1bUichWQKCKLnUcILwaeV9UMEZkAPA8MJw9WE90di63ggjUusNjcer9b+Rxrkj/zzDNMnDjRW7wJYMGCBTz00EOICB06dCAtLY2UlBQSEhKIiYmhSpUqAMTExLBo0SL69u3L9OnT2brVU5kiJCSEatWqAXD11Vd7t3vy5Mnsj1oPWgE5A8lnPfQUVV3rvD8ObAFqO5+/VdUMp+sK/D/J1xhjAm7hwoXUrl2byMjILO379u2jbt263s916tRh3759ObanpaUBMHr0aNq0acO9997LgQMHvP0mT57Mddddx7Bhw3jjjTcCfFRFIyBnIKr6ZxHpBtycWQ89NyLSAM9j3Vf6WTwAmJPLur410RnTKiOnriWqZjnPT1/ByGIruGCNCyw2t06cOEFCQgI///wzJ0+eJCEh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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "xgb.plot_importance(full_pipeline_m['rfm'],max_num_features = 10)\n",
+    "plt.rcParams['figure.figsize'] = [16, 16]\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Predictions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Id</th>\n",
+       "      <th>Product_Info_1</th>\n",
+       "      <th>Product_Info_2</th>\n",
+       "      <th>Product_Info_3</th>\n",
+       "      <th>Product_Info_4</th>\n",
+       "      <th>Product_Info_5</th>\n",
+       "      <th>Product_Info_6</th>\n",
+       "      <th>Product_Info_7</th>\n",
+       "      <th>Ins_Age</th>\n",
+       "      <th>Ht</th>\n",
+       "      <th>...</th>\n",
+       "      <th>Medical_Keyword_39</th>\n",
+       "      <th>Medical_Keyword_40</th>\n",
+       "      <th>Medical_Keyword_41</th>\n",
+       "      <th>Medical_Keyword_42</th>\n",
+       "      <th>Medical_Keyword_43</th>\n",
+       "      <th>Medical_Keyword_44</th>\n",
+       "      <th>Medical_Keyword_45</th>\n",
+       "      <th>Medical_Keyword_46</th>\n",
+       "      <th>Medical_Keyword_47</th>\n",
+       "      <th>Medical_Keyword_48</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>D3</td>\n",
+       "      <td>26</td>\n",
+       "      <td>0.487179</td>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.611940</td>\n",
+       "      <td>0.781818</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>A2</td>\n",
+       "      <td>26</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.626866</td>\n",
+       "      <td>0.727273</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>D3</td>\n",
+       "      <td>26</td>\n",
+       "      <td>0.144667</td>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.582090</td>\n",
+       "      <td>0.709091</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>9</td>\n",
+       "      <td>1</td>\n",
+       "      <td>A1</td>\n",
+       "      <td>26</td>\n",
+       "      <td>0.151709</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.522388</td>\n",
+       "      <td>0.654545</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>12</td>\n",
+       "      <td>1</td>\n",
+       "      <td>A1</td>\n",
+       "      <td>26</td>\n",
+       "      <td>0.076923</td>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.298507</td>\n",
+       "      <td>0.672727</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 127 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Id  Product_Info_1 Product_Info_2  Product_Info_3  Product_Info_4  \\\n",
+       "0   1               1             D3              26        0.487179   \n",
+       "1   3               1             A2              26        0.076923   \n",
+       "2   4               1             D3              26        0.144667   \n",
+       "3   9               1             A1              26        0.151709   \n",
+       "4  12               1             A1              26        0.076923   \n",
+       "\n",
+       "   Product_Info_5  Product_Info_6  Product_Info_7   Ins_Age        Ht  ...  \\\n",
+       "0               2               3               1  0.611940  0.781818  ...   \n",
+       "1               2               3               1  0.626866  0.727273  ...   \n",
+       "2               2               3               1  0.582090  0.709091  ...   \n",
+       "3               2               1               1  0.522388  0.654545  ...   \n",
+       "4               2               3               1  0.298507  0.672727  ...   \n",
+       "\n",
+       "   Medical_Keyword_39  Medical_Keyword_40  Medical_Keyword_41  \\\n",
+       "0                   0                   0                   0   \n",
+       "1                   0                   0                   0   \n",
+       "2                   0                   0                   0   \n",
+       "3                   0                   0                   0   \n",
+       "4                   0                   0                   0   \n",
+       "\n",
+       "   Medical_Keyword_42  Medical_Keyword_43  Medical_Keyword_44  \\\n",
+       "0                   0                   0                   0   \n",
+       "1                   0                   0                   0   \n",
+       "2                   0                   0                   0   \n",
+       "3                   0                   0                   0   \n",
+       "4                   0                   0                   0   \n",
+       "\n",
+       "   Medical_Keyword_45  Medical_Keyword_46  Medical_Keyword_47  \\\n",
+       "0                   0                   0                   0   \n",
+       "1                   0                   0                   0   \n",
+       "2                   0                   0                   0   \n",
+       "3                   0                   0                   1   \n",
+       "4                   0                   0                   0   \n",
+       "\n",
+       "   Medical_Keyword_48  \n",
+       "0                   0  \n",
+       "1                   0  \n",
+       "2                   0  \n",
+       "3                   1  \n",
+       "4                   0  \n",
+       "\n",
+       "[5 rows x 127 columns]"
+      ]
+     },
+     "execution_count": 31,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "test_data = pd.read_csv('test.csv')\n",
+    "test_data.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/anaconda3/lib/python3.7/site-packages/pandas/core/frame.py:3997: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  errors=errors,\n",
+      "/opt/anaconda3/lib/python3.7/site-packages/pandas/core/indexing.py:844: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  self.obj[key] = _infer_fill_value(value)\n",
+      "/opt/anaconda3/lib/python3.7/site-packages/pandas/core/indexing.py:965: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  self.obj[item] = s\n",
+      "/opt/anaconda3/lib/python3.7/site-packages/pandas/core/frame.py:4153: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  downcast=downcast,\n"
+     ]
+    }
+   ],
+   "source": [
+    "y_pred = full_pipeline_m.predict( test_data ) "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "19765"
+      ]
+     },
+     "execution_count": 33,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "len(y_pred)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#creating dataframe to save into proper format\n",
+    "pred_res = pd.DataFrame(y_pred, columns = ['Response'])\n",
+    "pred_id = test_data['Id']\n",
+    "final = pd.concat([pred_id,pred_res], axis = 1)\n",
+    "final"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "final.to_csv('prudential_pred.csv',index = False, header = True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Next steps, implementing grid search into pipeline\n",
+    "- Currently there is a fittransform error from the GridSearch's scoring"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 508,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "# Do not run\n",
+    "X = data.drop('Response', axis = 1)\n",
+    "y = data['Response'].values \n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split( X, y , test_size = 0.2 , random_state = 42 )\n",
+    "\n",
+    "#The full pipeline as a step in another pipeline with an estimator as the final step\n",
+    "full_pipeline_m = Pipeline( steps = [ \n",
+    "    ( 'full_pipeline', full_pipeline),\n",
+    "    ('rfm',XGBClassifier(n_jobs = -1,))\n",
+    "#     ('rfm', RandomForestClassifier(random_state = 0, class_weight = 'balanced')),\n",
+    "# ( 'model', RandomForestClassifier(n_jobs = -1,verbose = 1, random_state = 0, class_weight = 'balanced'),) #score = 0.41, 0.50933\n",
+    "] )\n",
+    "\n",
+    "#Grid search\n",
+    "\n",
+    "grid = {'rfm__max_depth': [2, 6, 10], \n",
+    "         'rfm__min_samples_split': [5, 10]\n",
+    "       }\n",
+    "\n",
+    "# Create the grid, with \"pipe\" as the estimator\n",
+    "gridsearch = GridSearchCV(estimator=full_pipeline_m, \n",
+    "                          param_grid=grid, \n",
+    "                          scoring=cohen, \n",
+    "                          cv=5,\n",
+    "#                           error_score = 0,\n",
+    "#                           refit = False\n",
+    "                         )\n",
+    "\n",
+    "# Fit using grid search\n",
+    "# gridsearch.fit(X_train, y_train)\n",
+    "\n",
+    "# Calculate the test score\n",
+    "# gridsearch.score(X_test, y_test)\n",
+    "\n",
+    "#Can call fit on it just like any other pipeline\n",
+    "# full_pipeline_m.fit( X_train, y_train )\n",
+    "\n",
+    "#Can predict with it like any other pipeline\n",
+    "# y_pred = full_pipeline_m.predict( X_test ) \n",
+    "# y_pred = gridsearch.predict( X_test ) \n",
+    "                        "
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
