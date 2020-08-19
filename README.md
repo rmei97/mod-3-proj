@@ -21,7 +21,7 @@ Exploring and cleaning the data set was a huge part of this project. I looked a 
 [response vs. bmi](/response_vs_bmi.png)
 
 
-[response vs. age.png](/response_vs_age.png)
+[response vs. age](/response_vs_age.png)
 
 
 I saw the larger the age, the higher the risk. With this, I inferred the lower the risk level the higher the risk as a client. After looking at the correlation matrix for all my variables I was able to drop some variables from my model, and create some features such as summing up the number of medical keywords and average out family history values since there was a pattern of having partially filled values for any number of the columns. 
